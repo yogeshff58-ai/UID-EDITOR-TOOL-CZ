@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRAFT ZONE FF – Craftland UID Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<style>
+:root{--bg:#06050d;--pn:#0d0b1a;--bd:#1d1b3a;--cy:#00f0ff;--mg:#ff2bd6;--gr:#39ff88;--yl:#ffe14d;--rd:#ff3b5c;--tx:#d8e6ff;--mu:#8089b3}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(circle at 15% 0,#1d0b38 0,var(--bg) 50%) fixed;color:var(--tx);font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif;min-height:100vh}
+.win{max-width:760px;margin:12px auto;border:1px solid var(--cy);border-radius:12px;box-shadow:0 0 22px #00f0ff55,inset 0 0 30px #00f0ff10;background:#08061380;overflow:hidden}
+.bar{display:flex;align-items:center;gap:7px;padding:9px 12px;background:linear-gradient(90deg,#14103a,#2a0f3d);border-bottom:1px solid var(--cy)}
+.bar i{width:11px;height:11px;border-radius:50%}
+.bar span{margin-left:8px;color:var(--mu);font-size:12px;letter-spacing:2px}
+.hd{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 12px 4px;text-decoration:none;color:inherit}
+.hd svg{width:30px;height:21px;flex:none}
+.hd b{display:block;font-size:22px;letter-spacing:3px;color:#fff;text-shadow:0 0 6px var(--cy),0 0 16px var(--cy),0 0 32px var(--mg)}
+.hd small{color:var(--mu);letter-spacing:2px;font-size:11px}
+.body{padding:12px;display:grid;gap:12px}
+.pn{background:var(--pn);border:1px solid var(--bd);border-radius:10px;padding:14px}
+.pn h2{margin:0 0 10px;font-size:13px;letter-spacing:2px;color:var(--mg);text-shadow:0 0 8px var(--mg);text-transform:uppercase}
+.drop{position:relative;border:2px dashed var(--cy);border-radius:10px;padding:26px 12px;text-align:center;color:var(--mu);transition:background .2s;cursor:pointer}
+.drop.over{background:#00f0ff18;border-style:solid}
+.drop .up{font-size:26px;display:block}
+.drop b{color:var(--cy)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.fc{display:flex;gap:10px;align-items:center;border:1px solid var(--bd);border-radius:10px;padding:9px;margin-top:8px;background:#0a0818}
+.fc.in{animation:slide .45s cubic-bezier(.2,1.4,.4,1)}
+.fc.shake{animation:shake .5s}
+.fc.pop{animation:pop .6s}
+.fc.bad{border-color:var(--rd);box-shadow:0 0 12px #ff3b5c55}
+.fc.ok{border-color:var(--gr);box-shadow:0 0 12px #39ff8855}
+.fc.load{border-color:var(--cy)}
+.ic{flex:none;width:44px;height:44px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:800;letter-spacing:1px;color:var(--cy);border:1px solid var(--cy);box-shadow:0 0 8px #00f0ff55}
+.bad .ic{color:var(--rd);border-color:var(--rd)}.ok .ic{color:var(--gr);border-color:var(--gr)}
+.inf{flex:1;min-width:0;word-break:break-all}
+.mu{color:var(--mu);font-size:12px}
+.uid{color:var(--yl);text-shadow:0 0 6px var(--yl);font-family:ui-monospace,Consolas,monospace;font-weight:700}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--cy);border-top-color:transparent;border-radius:50%;animation:rot .7s linear infinite;vertical-align:-2px}
+input[type=text]{width:100%;padding:12px;background:#04030a;color:var(--gr);border:1px solid var(--cy);border-radius:8px;font:inherit;font-size:17px;font-family:ui-monospace,Consolas,monospace;box-shadow:0 0 8px #00f0ff30}
+button{font:inherit;font-weight:700;letter-spacing:1px;padding:11px 16px;border-radius:8px;border:1px solid var(--cy);background:transparent;color:var(--cy);cursor:pointer;text-shadow:0 0 6px var(--cy);box-shadow:0 0 10px #00f0ff40;transition:transform .12s}
+button:active{transform:scale(.95)}
+button.m{border-color:var(--mg);color:var(--mg);text-shadow:0 0 6px var(--mg);box-shadow:0 0 10px #ff2bd640}
+button.g{border-color:var(--gr);color:var(--gr);text-shadow:0 0 6px var(--gr);box-shadow:0 0 10px #39ff8840;padding:8px 12px}
+button.x{border-color:var(--bd);color:var(--mu);box-shadow:none;text-shadow:none;padding:6px 9px}
+button:disabled{opacity:.35;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.row button{flex:1}
+#busy{position:fixed;inset:0;background:#06050dd9;display:none;place-items:center;z-index:9;text-align:center;color:var(--cy);letter-spacing:3px}
+#busy.on{display:grid}
+#busy .t{width:220px;height:6px;border-radius:6px;background:#1d1b3a;overflow:hidden;margin:14px auto 0}
+#busy .t i{display:block;width:40%;height:100%;background:linear-gradient(90deg,var(--cy),var(--mg));box-shadow:0 0 12px var(--cy);animation:bar 1s ease-in-out infinite}
+#nt{position:fixed;top:10px;left:0;right:0;display:grid;gap:8px;justify-items:center;z-index:10;pointer-events:none;padding:0 10px}
+.n{pointer-events:auto;width:min(420px,100%);display:grid;grid-template-columns:1fr auto;padding:10px 14px;border-radius:12px;background:#0d0b1af2;border:1px solid var(--cy);border-left-width:4px;box-shadow:0 0 14px #00f0ff55;animation:ni .3s ease-out;cursor:pointer}
+.n b{font-size:12px;letter-spacing:1px;color:var(--cy)}.n span{grid-column:1;font-size:13px}.n u{grid-row:1/3;grid-column:2;text-decoration:none;color:var(--mu);align-self:center}
+.n.ok{border-color:var(--gr)}.n.ok b{color:var(--gr)}.n.er{border-color:var(--rd)}.n.er b{color:var(--rd)}.n.warn{border-color:var(--yl)}.n.warn b{color:var(--yl)}
+.n.out{opacity:0;transform:translateY(-12px);transition:.3s}
+footer{text-align:center;padding:14px;color:var(--mu);font-size:12px;border-top:1px solid var(--bd)}
+footer b,footer a{color:var(--cy);text-decoration:none;text-shadow:0 0 6px var(--cy)}
+@keyframes ni{from{opacity:0;transform:translateY(-16px)}}
+@keyframes slide{from{opacity:0;transform:translateX(-40px) scale(.9)}}
+@keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+@keyframes pop{40%{transform:scale(1.05);box-shadow:0 0 30px var(--gr)}}
+@keyframes rot{to{transform:rotate(360deg)}}
+@keyframes bar{from{margin-left:-40%}to{margin-left:100%}}
+</style>
+</head>
+<body>
+<div class="win">
+<div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span>CRAFTLAND UID STUDIO</span></div>
+<a class="hd" href="https://www.youtube.com/@CraftZoneff" target="_blank" rel="noopener">
+<svg viewBox="0 0 68 48"><rect width="68" height="48" rx="12" fill="#f00"/><path d="M27 14l20 10-20 10z" fill="#fff"/></svg>
+<div><b>CRAFT ZONE FF</b><small>CRAFTLAND UID STUDIO</small></div>
+</a>
+<div class="body">
+<section class="pn"><h2>📁 Folder 1 · Map file (.bytes)</h2>
+<div class="drop" id="dz1"><input type="file" id="f1" multiple><span class="up">⬆</span><b>Tap to add map file</b><div class="mu">e.g. ProjectData_slot_1.bytes</div></div><div id="l1"></div></section>
+<section class="pn"><h2>📁 Folder 2 · Meta file</h2>
+<div class="drop" id="dz2"><input type="file" id="f2" multiple><span class="up">⬆</span><b>Tap to add meta file</b><div class="mu">Its UID is matched with the map file automatically</div></div><div id="l2"></div></section>
+<section class="pn">
+<h2>Change or remove UID</h2>
+<input type="text" id="n" inputmode="numeric" maxlength="12" placeholder="New UID (digits only)">
+<div class="row"><button id="chg" disabled>⚡ CHANGE UID</button><button id="rem" class="m" disabled>✖ REMOVE UID</button></div>
+<div class="row"><button id="all" class="g" style="display:none">⬇ DOWNLOAD ALL</button></div>
+</section>
+<p class="mu" style="text-align:center;margin:0 12px 4px">Use only on your own maps. Files never leave your device.</p>
+</div>
+<footer>© <b>CRAFT ZONE</b> — Copyright holder: <b>CRAFT ZONE</b>. All rights reserved.</footer>
+</div>
+<div id="busy"><div><div style="font-size:15px">PROCESSING…</div><div class="t"><i></i></div></div></div>
+<div id="nt"></div>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const asc=s=>new TextEncoder().encode(s);
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let files=[],seq=0;
+function notify(title,msg,c){const n=document.createElement("div");n.className="n "+(c||"info");n.innerHTML=`<b>${esc(title)}</b><span>${esc(msg)}</span><u>✕</u>`;const box=$("nt");box.prepend(n);while(box.children.length>4)box.lastChild.remove();const kill=()=>{n.classList.add("out");setTimeout(()=>n.remove(),300)};n.onclick=kill;setTimeout(kill,4200);if(navigator.vibrate&&(c==="er"||c==="ok"))navigator.vibrate(c==="er"?[60,40,60]:40)}
+const toast=(m,c)=>notify(c==="er"?"Error":c==="ok"?"Success":"Info",m,c);
+function rv(b,i){let r=0,m=1,c;do{if(i>=b.length)throw Error("File is incomplete");c=b[i++];r+=(c&127)*m;m*=128}while(c>=128);return[r,i]}
+function ev(n,pad){const o=[];do{const c=n%128;n=Math.floor(n/128);o.push(c|(n?128:0))}while(n);if(pad)while(o.length<pad){o[o.length-1]|=128;o.push(0)}return Uint8Array.from(o)}
+function le(n,W){const o=new Uint8Array(W);for(let i=0;i<W;i++){o[i]=n%256;n=Math.floor(n/256)}return o}
+function cat(a){let t=0;a.forEach(x=>t+=x.length);const r=new Uint8Array(t);let p=0;a.forEach(x=>{r.set(x,p);p+=x.length});return r}
+function parse(b,lo,hi){const o=[];let i=lo;while(i<hi){const st=i;let k;[k,i]=rv(b,i);const f=Math.floor(k/8),w=k&7;let v=0,ds=i,end;
+if(w===0){[v,i]=rv(b,i);end=i}else if(w===2){let l;[l,i]=rv(b,i);ds=i;end=i+l;v=l;i=end}else if(w===5){ds=i;i+=4;end=i}else if(w===1){ds=i;i+=8;end=i}else throw Error("Unknown format");
+if(i>hi)throw Error("File is truncated");o.push({f,w,st,ds,end,v})}return o}
+async function pipe(u8,cls,fb){if(window[cls])return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new window[cls]("gzip"))).arrayBuffer());if(window.pako)return fb(u8);throw Error("gzip not supported – use Chrome")}
+const gunzip=u=>pipe(u,"DecompressionStream",x=>pako.ungzip(x));
+const gzip=u=>pipe(u,"CompressionStream",x=>pako.gzip(x));
+const isD=c=>c>=48&&c<=57;
+function find(b,p,lo,hi,skip){const r=[];for(let i=lo;i<=hi-p.length;i++){if(b[i]!==p[0])continue;let j=1;while(j<p.length&&b[i+j]===p[j])j++;if(j===p.length&&!skip(i))r.push(i)}return r}
+function runs(b,lo,hi,m){let i=lo;while(i<hi){if(isD(b[i])){let j=i;while(j<hi&&isD(b[j]))j++;const L=j-i;if(L>=9&&L<=12){let s="";for(let k=i;k<j;k++)s+=String.fromCharCode(b[k]);m.set(s,(m.get(s)||0)+1)}i=j}else i++}}
+const best=m=>{const b=[...m.entries()].sort((a,c)=>c[1]-a[1])[0];return b?b[0]:null};
+
+function detect(F){
+ const t7=F.top.find(f=>f.w===0&&f.f===7);
+ if(t7&&!(t7.v>=1e8&&t7.v<1e12))return null;
+ const t=F.top.find(f=>f.w===0&&f.f===7&&f.v>=1e8&&f.v<1e12)||F.top.find(f=>f.w===0&&f.v>=1e9&&f.v<1e12);
+ if(t)return{uid:String(t.v)};
+ const m=new Map();runs(F.dec,0,F.dec.length,m);runs(F.d,0,F.gzF.ds,m);runs(F.d,F.gzF.end,F.d.length,m);
+ const u=best(m);return u?{uid:u}:null}
+async function parseMap(d){
+ const top=parse(d,0,d.length),outer=top[0];
+ if(!outer||outer.f!==1||outer.w!==2)throw Error("Not a Craftland map file");
+ const oF=parse(d,outer.ds,outer.end),gzF=oF.find(x=>x.f===1&&x.w===2);
+ if(!gzF)throw Error("Map data block not found");
+ const gz=d.subarray(gzF.ds,gzF.end),dec=await gunzip(gz);
+ return{kind:"map",d,top,outer,oF,gzF,gz,dec}}
+
+async function applyMap(F,uid,nS){
+ const old=Number(uid),nw=nS?Number(nS):0,same=!nS||nS.length===uid.length;
+ const pa=asc(uid),na=asc(nS||"0".repeat(uid.length)),pv=ev(old),nv=ev(nw,pv.length);
+ const d=F.d.slice(),dec=F.dec.slice();
+ const inGz=i=>i>=F.gzF.ds&&i<F.gzF.end;
+ const topV=new Set();F.top.forEach(f=>{if(f.w===0)for(let k=f.ds;k<f.end;k++)topV.add(k)});
+ const adj=(b,i,L)=>(i>0&&isD(b[i-1]))||isD(b[i+L]);
+ let cDec=0,cRaw=0,cVar=0,skip=0;
+ const aD=find(dec,pa,0,dec.length,i=>adj(dec,i,pa.length));
+ const aR=find(d,pa,0,d.length,i=>inGz(i)||adj(d,i,pa.length));
+ if(same){aD.forEach(i=>dec.set(na,i));aR.forEach(i=>d.set(na,i));cDec=aD.length;cRaw=aR.length}else skip+=aD.length+aR.length;
+ const vR=find(d,pv,0,d.length,i=>inGz(i)||topV.has(i)||(i>0&&d[i-1]>=128));
+ if(nv.length<=pv.length){vR.forEach(i=>d.set(nv,i));cVar=vR.length}else skip+=vR.length;
+ const cTop=F.top.filter((f,i)=>i>0&&f.w===0&&f.v===old).length;
+ const count=cDec+cRaw+cVar+cTop;
+ if(!count)throw Error(skip?"New UID needs the same number of digits ("+uid.length+")":"UID not found");
+ const gzOut=cDec?await gzip(dec):F.gz;
+ const oc=cat(F.oF.map(f=>f===F.gzF?cat([Uint8Array.of(10),ev(gzOut.length),gzOut]):d.subarray(f.st,f.end)));
+ const rest=F.top.slice(1).map(f=>(f.w===0&&f.v===old)?cat([d.subarray(f.st,f.ds),ev(nw)]):d.subarray(f.st,f.end));
+ const out=cat([Uint8Array.of(10),ev(oc.length),oc,...rest]);
+ const t2=parse(out,0,out.length),o2=parse(out,t2[0].ds,t2[0].end),g2=o2.find(x=>x.f===1&&x.w===2),back=await gunzip(out.subarray(g2.ds,g2.end));
+ if(back.length!==dec.length||t2.length!==F.top.length)throw Error("Verification failed – file not changed");
+ for(let i=0;i<back.length;i+=997)if(back[i]!==dec[i])throw Error("Verification failed – file not changed");
+ return{out,count}}
+
+function textOf(d){if(d.length>5e6)return null;for(let i=0;i<Math.min(d.length,4096);i++)if(d[i]===0)return null;try{return new TextDecoder("utf-8",{fatal:true}).decode(d)}catch{return null}}
+function genHits(F,uid){
+ if(F.text!=null)return(F.text.match(new RegExp("(?<!\\d)"+uid+"(?!\\d)","g"))||[]).length;
+ const d=F.d,old=Number(uid),pa=asc(uid),n=[];
+ let c=find(d,pa,0,d.length,i=>(i>0&&isD(d[i-1]))||isD(d[i+pa.length])).length;
+ c+=find(d,ev(old),0,d.length,i=>i>0&&d[i-1]>=128).length;
+ c+=find(d,le(old,8),0,d.length,()=>false).length;
+ if(old<2**32)c+=find(d,le(old,4),0,d.length,()=>false).length;
+ return c}
+function genDet(F,gu){
+ if(gu&&genHits(F,gu))return{uid:gu};
+ let u;
+ if(F.text!=null){const m=new Map();(F.text.match(/(?<!\d)\d{9,12}(?!\d)/g)||[]).forEach(s=>m.set(s,(m.get(s)||0)+1));u=best(m)}
+ else{const m=new Map();runs(F.d,0,F.d.length,m);u=best(m)}
+ return u?{uid:u}:null}
+function applyGen(F,uid,nS){
+ if(F.text!=null){let c=0;const t=F.text.replace(new RegExp("(?<!\\d)"+uid+"(?!\\d)","g"),()=>(c++,nS||"0"));if(!c)throw Error("UID not found");return{out:asc(t),count:c}}
+ const d=F.d.slice(),old=Number(uid),nw=nS?Number(nS):0;let c=0,skip=0;
+ const pa=asc(uid),aH=find(d,pa,0,d.length,i=>(i>0&&isD(d[i-1]))||isD(d[i+pa.length]));
+ if(!nS||nS.length===uid.length){const na=asc(nS||"0".repeat(uid.length));aH.forEach(i=>d.set(na,i));c+=aH.length}else skip+=aH.length;
+ const pv=ev(old),nv=ev(nw,pv.length),vH=find(d,pv,0,d.length,i=>i>0&&d[i-1]>=128);
+ if(nv.length<=pv.length){vH.forEach(i=>d.set(nv,i));c+=vH.length}else skip+=vH.length;
+ for(const W of [8,4]){if(W===4&&old>=2**32)continue;const h=find(d,le(old,W),0,d.length,()=>false);if(nw<2**(8*W)){h.forEach(i=>d.set(le(nw,W),i));c+=h.length}else skip+=h.length}
+ if(!c)throw Error(skip?"New UID needs the same number of digits ("+uid.length+")":"UID not found");
+ return{out:d,count:c}}
+
+function refresh(){
+ const gu=(files.find(F=>F.kind==="map"&&F.det)||{}).det;
+ files.forEach(F=>{
+  if(F.kind==="map"){F.det=detect(F);F.bad=false;F.msg=F.note||(F.det?"Map file ✔":F.edited?"UID removed ✔":"No UID in this file")}
+  else if(F.kind==="meta"){F.det=genDet(F,gu&&gu.uid);F.bad=!F.det&&!F.edited;F.msg=F.note||(F.det?"Meta file ✔":F.edited?"UID removed ✔":"No UID found – wrong file?")}
+  if(F.bad&&!F.wasBad)F.fresh=true;F.wasBad=F.bad})}
+function render(){
+ refresh();
+ const card=F=>{
+  const cls=F.kind==="load"?"load":F.bad?"bad":F.edited?"ok":"";
+  const sub=F.kind==="load"?'<span class="spin"></span> Reading file…':(F.det?`UID <span class="uid">${F.det.uid}</span> · `:"")+esc(F.msg||"");
+  return `<div class="fc ${cls} ${F.fresh?(F.bad?"shake":"in"):""} ${F.pop?"pop":""}"><div class="ic">${F.bad&&F.kind!=="meta"?"✖":F.folder==="map"?"MAP":"META"}</div><div class="inf"><b>${esc(F.name)}</b> <span class="mu">${(F.d?F.d.length/1024:F.size/1024).toFixed(0)} KB</span><div class="mu">${sub}</div></div>${F.edited?`<button class="g" data-d="${F.id}">⬇</button>`:""}<button class="x" data-r="${F.id}">✕</button></div>`};
+ $("l1").innerHTML=files.filter(F=>F.folder==="map").map(card).join("");$("l2").innerHTML=files.filter(F=>F.folder==="meta").map(card).join("");
+ files.forEach(F=>{F.fresh=false;F.pop=false});
+ document.querySelectorAll("[data-d]").forEach(e=>e.onclick=()=>dl(files.find(F=>F.id==e.dataset.d)));
+ document.querySelectorAll("[data-r]").forEach(e=>e.onclick=()=>{files=files.filter(F=>F.id!=e.dataset.r);render()});
+ $("chg").disabled=$("rem").disabled=!files.some(F=>F.det);
+ $("all").style.display=files.filter(F=>F.edited).length>1?"":"none"}
+async function addFiles(list,folder){
+ for(const f of list){
+  const F={id:++seq,name:f.name,size:f.size,kind:"load",folder,fresh:true};files.push(F);render();
+  try{
+   const d=new Uint8Array(await f.arrayBuffer());await sleep(500);
+   if(!d.length)throw Error("File is empty");
+   let M=null;try{M=await parseMap(d)}catch(e){}
+   if(folder==="map"){if(!M)throw Error("Not a Craftland map file");Object.assign(F,M)}
+   else{if(M||/ProjectData/i.test(f.name))throw Error("This is a map file – use Folder 1");F.kind="meta";F.d=d;F.text=textOf(d)}
+   refresh();
+   notify(folder==="map"?"Map file added":"Meta file added",F.det?"UID found: "+F.det.uid:"No UID found in this file",F.det?"ok":"warn")
+  }catch(e){F.kind="bad";F.bad=true;F.msg=e.message;F.fresh=true;notify("Wrong file",f.name+" – "+e.message,"er")}
+  render()}}
+async function go(remove){
+ const nS=remove?"":$("n").value.trim();
+ if(!remove&&!/^\d{5,12}$/.test(nS)){$("n").style.animation="shake .5s";setTimeout(()=>$("n").style.animation="",600);return toast("Enter a new UID: digits only (5–12)","er")}
+ const jobs=files.filter(F=>F.det).map(F=>({F,uid:F.det.uid}));
+ $("busy").classList.add("on");await sleep(500);let ok=0,bad=0;
+ for(const{F,uid}of jobs){
+  try{
+   if(F.kind==="map"){const r=await applyMap(F,uid,nS),M=await parseMap(r.out);Object.assign(F,M);F.note=`${uid} → ${remove?"0 (removed)":nS} · verified ✔`}
+   else{const r=applyGen(F,uid,nS);F.d=r.out;F.text=F.text!=null?new TextDecoder().decode(r.out):null;F.note=`${uid} → ${remove?"0 (removed)":nS} · ${r.count} place(s) ✔`}
+   F.edited=true;F.pop=true;ok++;
+  }catch(e){F.note="✖ "+e.message;F.bad=true;F.fresh=true;bad++;notify("Failed",F.name+" – "+e.message,"er")}
+  await sleep(250)}
+ $("busy").classList.remove("on");render();
+ files.forEach(F=>{if(F.note&&F.note[0]==="✖")F.note=""});
+ toast(ok?`Done! ${ok} file(s) updated – tap ⬇ to download`+(bad?` · ${bad} failed`:""):"Nothing changed",ok?"ok":"er")}
+function dl(F){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([F.d],{type:"application/octet-stream"}));a.download=F.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+async function dlAll(){for(const F of files.filter(F=>F.edited)){dl(F);await sleep(500)}}
+function wire(dz,inp,folder){dz=$(dz);inp=$(inp);inp.onchange=e=>{if(e.target.files.length)addFiles([...e.target.files],folder);e.target.value=""};["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add("over")}));["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("over")}));dz.addEventListener("drop",e=>{if(e.dataTransfer.files.length)addFiles([...e.dataTransfer.files],folder)})}
+wire("dz1","f1","map");wire("dz2","f2","meta");
+$("chg").onclick=()=>go(false);$("rem").onclick=()=>go(true);$("all").onclick=dlAll;
+</script>
+</body>
+</html>
